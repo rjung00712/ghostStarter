@@ -2,7 +2,9 @@ package com.google.engedu.ghost;
 
 import android.content.res.AssetManager;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutCompat;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -15,8 +17,10 @@ import org.w3c.dom.Text;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Random;
+import android.os.Handler;
+import java.util.logging.LogRecord;
 
-public class GhostActivity extends AppCompatActivity {
+public class GhostActivity extends AppCompatActivity  {
     private static final String COMPUTER_TURN = "Computer's turn";
     private static final String USER_TURN = "Your turn";
     private GhostDictionary dictionary;
@@ -24,15 +28,21 @@ public class GhostActivity extends AppCompatActivity {
     private Random random = new Random();
 
     private String wordFrag = "";
-    TextView wordFragView;
-    TextView label;
-    Button challenge;
+    private TextView wordFragView;
+    private TextView label;
+    private Button challenge;
+    private boolean userWentFirst = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ghost);
         AssetManager assetManager = getAssets();
+
+        if(savedInstanceState != null) {
+            wordFrag = savedInstanceState.getString(wordFrag);
+        }
+
         try {
             InputStream inputStream = assetManager.open("words.txt");
 //            dictionary = new FastDictionary(inputStream);
@@ -47,13 +57,13 @@ public class GhostActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String currFrag = wordFrag;
-                String dictWord = dictionary.getAnyWordStartingWith(wordFrag);
+                String dictWord = dictionary.getGoodWordStartingWith(wordFrag);
                 if(currFrag.length() >= 4 && dictionary.isWord(currFrag)) {
-                    label.setText("Youser wins!!");
+                    label.setText("You-sir wins!!");
                 } else if(dictWord != null) {
                     label.setText("Computer wins!!: " + dictWord);
                 } else if(dictWord == null) {
-                    label.setText("Youser wins!!");
+                    label.setText("You-sir wins!!");
                 }
             }
         });
@@ -61,12 +71,20 @@ public class GhostActivity extends AppCompatActivity {
         onStart(null);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_ghost, menu);
-        return true;
-    }
+//    @Override
+//    public void onSavedInstanceState(Bundle savedInstanceState) {
+//        savedInstanceState.putString(wordFrag, wordFrag.toString());
+//        //savedInstanceState.putString(label);
+//
+//        super.onSaveInstanceState(savedInstanceState);
+//    }
+//a
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        // Inflate the menu; this adds items to the action bar if it is present.
+//        getMenuInflater().inflate(R.menu.menu_ghost, menu);
+//        return true;
+//    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -90,13 +108,14 @@ public class GhostActivity extends AppCompatActivity {
      * @return true
      */
     public boolean onStart(View view) {
-
-
         userTurn = random.nextBoolean();
+        if(userTurn) {
+            userWentFirst = true;
+        }
 
-        TextView text = (TextView) findViewById(R.id.ghostText);
-        text.setText("");
-        TextView label = (TextView) findViewById(R.id.gameStatus);
+        wordFragView = (TextView) findViewById(R.id.ghostText);
+        wordFragView.setText("");
+        label = (TextView) findViewById(R.id.gameStatus);
         if (userTurn) {
             label.setText(USER_TURN);
         } else {
@@ -107,27 +126,42 @@ public class GhostActivity extends AppCompatActivity {
     }
 
     private void computerTurn() {
-        TextView label = (TextView) findViewById(R.id.gameStatus);
-        // Do computer turn stuff then make it the user's turn again
-        // if fragment is a word and atleast 4 characters in length
-        if(wordFrag.length() >= 4 && dictionary.isWord(wordFrag)) {
-            label.setText("I, the computer, won!!");
-        } else {
-            if(dictionary.getAnyWordStartingWith(wordFrag)== null) {
-                label.setText("You're bluffing!! It's not a word. You lose haha!!");
-            } else {
-                label.setText(dictionary.getAnyWordStartingWith(wordFrag).
-                        substring(0, wordFrag.length()+1));
-            }
-        }
+        label = (TextView) findViewById(R.id.gameStatus);
+        userTurn = false;
 
-        userTurn = true;
-        label.setText(USER_TURN);
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if(dictionary.isWord(wordFrag.toLowerCase())){
+                    label.setText("I, the compooter, win!!");
+                }
+                else {
+                    String dictWord = dictionary.getGoodWordStartingWith(wordFrag.toLowerCase());
+                    if(dictWord == null) {
+                        if(wordFrag.length() >= 4) {
+                            label.setText("You can't bluff this computer!!");
+                            // do Something, close or something
+                        } else {
+                            label.setText("Not a word, must be at least 4 characters");
+                        }
+
+                    }
+                    else {
+                        wordFrag = dictWord.substring(0, wordFrag.length()+1);
+                        wordFragView.setText(wordFrag);
+                        userTurn = true;
+                        label.setText(USER_TURN);
+                    }
+                }
+            }
+        }, 2000);
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if(keyCode < 29 || keyCode > 54) {
+//        userTurn = true;
+        if(keyCode < 29 || keyCode > 54) {  // if it's a alphabet char
             return super.onKeyUp(keyCode, event);
         }
 
@@ -135,18 +169,14 @@ public class GhostActivity extends AppCompatActivity {
         label = (TextView) findViewById(R.id.gameStatus);
         wordFrag = wordFrag.concat(event.getDisplayLabel() + "");
         wordFrag = wordFrag.toLowerCase();
-
         wordFragView.setText(wordFrag);
-        if(dictionary.isWord(wordFrag.toLowerCase())) {
-            label.setText("Is a word");
-        }
-
-        userTurn = false;
         label.setText(COMPUTER_TURN);
-        computerTurn();
 
-        return false;
+        computerTurn();
+        return super.onKeyUp(keyCode, event);
     }
 
+    public boolean userFirst() { return this.userWentFirst; }
 
+    public boolean isUserTurn() { return this.userTurn; }
 }
