@@ -60,10 +60,13 @@ public class GhostActivity extends AppCompatActivity  {
                 String dictWord = dictionary.getGoodWordStartingWith(wordFrag);
                 if(currFrag.length() >= 4 && dictionary.isWord(currFrag)) {
                     label.setText("You-sir wins!!");
+                    return;
                 } else if(dictWord != null) {
                     label.setText("Computer wins!!: " + dictWord);
+                    return;
                 } else if(dictWord == null) {
                     label.setText("You-sir wins!!");
+                    return;
                 }
             }
         });
@@ -71,20 +74,12 @@ public class GhostActivity extends AppCompatActivity  {
         onStart(null);
     }
 
-//    @Override
-//    public void onSavedInstanceState(Bundle savedInstanceState) {
-//        savedInstanceState.putString(wordFrag, wordFrag.toString());
-//        //savedInstanceState.putString(label);
-//
-//        super.onSaveInstanceState(savedInstanceState);
-//    }
-//a
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.menu_ghost, menu);
-//        return true;
-//    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_ghost, menu);
+        return true;
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -125,6 +120,27 @@ public class GhostActivity extends AppCompatActivity  {
         return true;
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        savedInstanceState.putString("currentText", (String)wordFragView.getText());
+        savedInstanceState.putString("currentStatus", (String)label.getText());
+
+        super.onSaveInstanceState(savedInstanceState);
+    }
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        wordFragView.setText(savedInstanceState.getString("currentText"));
+        label.setText(savedInstanceState.getString("currentStatus"));
+    }
+
+    public void restart(View view) {
+//        Log.d("restart", "restart fired");
+        wordFragView.setText(USER_TURN);
+        label.setText("");
+        onStart(null);
+    }
+
     private void computerTurn() {
         label = (TextView) findViewById(R.id.gameStatus);
         userTurn = false;
@@ -135,15 +151,18 @@ public class GhostActivity extends AppCompatActivity  {
             public void run() {
                 if(dictionary.isWord(wordFrag.toLowerCase())){
                     label.setText("I, the compooter, win!!");
+                    return;
                 }
                 else {
                     String dictWord = dictionary.getGoodWordStartingWith(wordFrag.toLowerCase());
                     if(dictWord == null) {
                         if(wordFrag.length() >= 4) {
                             label.setText("You can't bluff this computer!!");
+                            return;
                             // do Something, close or something
                         } else {
                             label.setText("Not a word, must be at least 4 characters");
+                            return;
                         }
 
                     }
