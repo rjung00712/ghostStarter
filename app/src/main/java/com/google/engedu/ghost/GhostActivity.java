@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Random;
 import android.os.Handler;
-import java.util.logging.LogRecord;
+import android.util.Log;
 
 public class GhostActivity extends AppCompatActivity  {
     private static final String COMPUTER_TURN = "Computer's turn";
@@ -45,8 +45,8 @@ public class GhostActivity extends AppCompatActivity  {
 
         try {
             InputStream inputStream = assetManager.open("words.txt");
-//            dictionary = new FastDictionary(inputStream);
-            dictionary = new SimpleDictionary(inputStream);
+            dictionary = new FastDictionary(inputStream);
+//            dictionary = new SimpleDictionary(inputStream);
         } catch (IOException e) {
             Toast toast = Toast.makeText(this, "Could not load dictionary", Toast.LENGTH_LONG);
             toast.show();
@@ -108,6 +108,9 @@ public class GhostActivity extends AppCompatActivity  {
             userWentFirst = true;
         }
 
+        wordFrag = "";
+//        label.setText("");
+
         wordFragView = (TextView) findViewById(R.id.ghostText);
         wordFragView.setText("");
         label = (TextView) findViewById(R.id.gameStatus);
@@ -136,6 +139,7 @@ public class GhostActivity extends AppCompatActivity  {
 
     public void restart(View view) {
 //        Log.d("restart", "restart fired");
+
         wordFragView.setText(USER_TURN);
         label.setText("");
         onStart(null);
@@ -150,21 +154,20 @@ public class GhostActivity extends AppCompatActivity  {
             @Override
             public void run() {
                 if(dictionary.isWord(wordFrag.toLowerCase())){
-                    label.setText("I, the compooter, win!!");
+                    label.setText("I, the compooter, win!! ");
                     return;
                 }
                 else {
                     String dictWord = dictionary.getGoodWordStartingWith(wordFrag.toLowerCase());
                     if(dictWord == null) {
                         if(wordFrag.length() >= 4) {
-                            label.setText("You can't bluff this computer!!");
+                            label.setText("You can't bluff this computer!! " + wordFrag + "is not a word");
                             return;
                             // do Something, close or something
                         } else {
                             label.setText("Not a word, must be at least 4 characters");
                             return;
                         }
-
                     }
                     else {
                         wordFrag = dictWord.substring(0, wordFrag.length()+1);
