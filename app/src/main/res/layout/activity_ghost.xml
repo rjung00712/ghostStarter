@@ -54,6 +54,7 @@
         android:layout_height="wrap_content"
         android:text="restart"
         android:id="@+id/button2"
+        android:onClick="onStart"
         android:layout_alignTop="@+id/button"
         android:layout_alignRight="@+id/ghostText"
         android:layout_alignEnd="@+id/ghostText"
