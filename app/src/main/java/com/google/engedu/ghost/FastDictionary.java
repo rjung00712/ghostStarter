@@ -1,3 +1,5 @@
+/*Richard Jung and Michelle Duong collab*/
+
 package com.google.engedu.ghost;
 
 import java.io.BufferedReader;
@@ -5,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import android.util.Log;
 
 public class FastDictionary implements GhostDictionary {
 
@@ -20,6 +23,7 @@ public class FastDictionary implements GhostDictionary {
                 root.add(line.trim());
         }
     }
+
     @Override
     public boolean isWord(String word) {
         return root.isWord(word);

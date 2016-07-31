@@ -62,6 +62,7 @@ public class GhostActivity extends AppCompatActivity  {
                     label.setText("You-sir wins!!");
                     return;
                 } else if(dictWord != null) {
+                    dictWord = dictionary.getAnyWordStartingWith(dictWord);
                     label.setText("Computer wins!!: " + dictWord);
                     return;
                 } else if(dictWord == null) {
@@ -154,14 +155,14 @@ public class GhostActivity extends AppCompatActivity  {
             @Override
             public void run() {
                 if(dictionary.isWord(wordFrag.toLowerCase())){
-                    label.setText("I, the compooter, win!! ");
+                    label.setText("I, the compooter, win!! " + wordFrag + " is a word");
                     return;
                 }
                 else {
                     String dictWord = dictionary.getGoodWordStartingWith(wordFrag.toLowerCase());
                     if(dictWord == null) {
                         if(wordFrag.length() >= 4) {
-                            label.setText("You can't bluff this computer!! " + wordFrag + "is not a word");
+                            label.setText("You can't bluff this computer!! " + wordFrag + " is not a word");
                             return;
                             // do Something, close or something
                         } else {
